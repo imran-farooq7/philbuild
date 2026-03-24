@@ -5,11 +5,30 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
-export async function login(formData: FormData) {
+export type LoginState =
+  | {
+      error?: string;
+      fieldErrors?: {
+        email?: string;
+        password?: string;
+      };
+    }
+  | undefined;
+
+export async function login(_state: LoginState, formData: FormData) {
   const supabase = await createClient();
 
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
+
+  if (!email || !password) {
+    return {
+      fieldErrors: {
+        email: email ? undefined : "Email is required.",
+        password: password ? undefined : "Password is required.",
+      },
+    };
+  }
 
   const { error } = await supabase.auth.signInWithPassword({
     email,
