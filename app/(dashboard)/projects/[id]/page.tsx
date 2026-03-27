@@ -2,7 +2,7 @@
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getProjectDetails } from "@/app/actions/project";
+import { getProjectDetails } from "@/actions/project";
 import { ProjectHeader } from "@/components/projects/project-header";
 import { ProjectOverview } from "@/components/projects/project-overview";
 import { ProjectBudget } from "@/components/projects/project-budget";
@@ -15,7 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default async function ProjectDetailsPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const supabase = await createClient();
 
@@ -23,8 +23,9 @@ export default async function ProjectDetailsPage({
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  const { id } = await params;
 
-  const project = await getProjectDetails(params.id);
+  const project = await getProjectDetails(id);
 
   if (!project) {
     notFound();
