@@ -1,16 +1,9 @@
 // app/(dashboard)/admin/page.tsx
-import { redirect } from "next/navigation";
 import { AdminDashboard } from "@/components/admin/admin-dashboard";
+import { redirect } from "next/navigation";
 // import { getPlatformAnalytics } from '@/app/actions/analytics' should be added back when analytics are implemented
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Suspense } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { Suspense } from "react";
 
 export default async function AdminDashboardPage() {
   const supabase = createAdminClient();
