@@ -40,7 +40,7 @@ export async function login(_state: LoginState, formData: FormData) {
   }
 
   revalidatePath("/");
-  redirect("/dashboard");
+  redirect("/admin");
 }
 
 export async function signup(formData: FormData) {

@@ -1,6 +1,10 @@
 // app/(dashboard)/admin/contractors/page.tsx
-import { getPendingContractors } from "@/actions/contractors";
+import {
+  getPendingContractors,
+  getVerifiedContractors,
+} from "@/actions/contractors";
 import { PendingContractorsList } from "@/components/admin/pending-contractors-list";
+import { VerifiedContractorsList } from "@/components/admin/verified-contractors-list";
 import {
   Card,
   CardContent,
@@ -8,11 +12,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Suspense } from "react";
 
-export default function AdminContractorsPage() {
+export default async function AdminContractorsPage() {
+  const [pendingContractors, verifiedContractors] = await Promise.all([
+    getPendingContractors(),
+    getVerifiedContractors(),
+  ]);
+
   return (
     <div className="container mx-auto py-10">
       <div className="mb-8">
@@ -25,9 +32,11 @@ export default function AdminContractorsPage() {
       <Tabs defaultValue="pending" className="flex flex-col gap-4">
         <TabsList>
           <TabsTrigger value="pending">
-            Pending ({getPendingContractors?.length || 0})
+            Pending ({pendingContractors?.length || 0})
           </TabsTrigger>
-          <TabsTrigger value="verified">Verified</TabsTrigger>
+          <TabsTrigger value="verified">
+            Verified ({verifiedContractors?.length || 0})
+          </TabsTrigger>
           <TabsTrigger value="rejected">Rejected</TabsTrigger>
         </TabsList>
 
@@ -40,29 +49,29 @@ export default function AdminContractorsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Suspense fallback={<PendingListFallback />}>
-                <PendingContractorsSection />
-              </Suspense>
+              <PendingContractorsList
+                contractors={pendingContractors || []}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="verified">
+          <Card>
+            <CardHeader>
+              <CardTitle>Verified Contractors</CardTitle>
+              <CardDescription>
+                Contractors who have passed the verification process
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <VerifiedContractorsList
+                contractors={verifiedContractors || []}
+              />
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
-  );
-}
-
-async function PendingContractorsSection() {
-  const pendingContractors = await getPendingContractors();
-
-  return <PendingContractorsList contractors={pendingContractors || []} />;
-}
-
-function PendingListFallback() {
-  return (
-    <div className="flex flex-col gap-3">
-      <Skeleton className="h-10 w-full" />
-      <Skeleton className="h-24 w-full" />
-      <Skeleton className="h-24 w-full" />
     </div>
   );
 }

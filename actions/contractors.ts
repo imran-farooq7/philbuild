@@ -2,6 +2,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -161,20 +162,40 @@ function calculateVerificationScore(data: {
 
 // Admin: Get pending contractors
 export async function getPendingContractors() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data: contractors, error } = await supabase
     .from("contractors")
     .select(
       `
       *,
-      profiles:user_id (full_name, email, phone)
+      profiles!contractors_user_id_fkey (full_name, email, phone)
     `,
     )
     .eq("verification_status", "pending")
     .order("created_at", { ascending: false });
 
   if (error) throw error;
+  return contractors;
+}
+
+// Admin: Get verified contractors
+export async function getVerifiedContractors() {
+  const supabase = createAdminClient();
+
+  const { data: contractors, error } = await supabase
+    .from("contractors")
+    .select(
+      `
+      *,
+      profiles!contractors_user_id_fkey (full_name, email, phone)
+    `,
+    )
+    .eq("verification_status", "verified")
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  console.log(contractors, "ver");
   return contractors;
 }
 
@@ -269,7 +290,7 @@ export async function getContractorById(contractorId: string) {
     .select(
       `
       *,
-      profiles:user_id (full_name, email, phone, avatar_url),
+      profiles!contractors_user_id_fkey (full_name, email, phone, avatar_url),
       contractor_specialties (specialty),
       contractor_previous_projects (project_name, year_completed)
     `,

@@ -2,6 +2,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -15,6 +16,28 @@ export type CreateProjectData = {
   scope: string[];
   requirements: string[];
 };
+
+async function getReadClient() {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return supabase;
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("user_type")
+    .eq("id", user.id)
+    .single();
+
+  if (profile?.user_type === "admin") {
+    return createAdminClient();
+  }
+
+  return supabase;
+}
 
 // Create new project
 export async function createProject(formData: FormData) {
@@ -105,7 +128,7 @@ export async function publishProject(projectId: string) {
 
 // Get available projects for contractors (Server Component)
 export async function getAvailableProjects() {
-  const supabase = await createClient();
+  const supabase = await getReadClient();
 
   const { data: projects, error } = await supabase
     .from("projects")
@@ -407,7 +430,7 @@ export async function submitInspection(formData: FormData) {
 
 // Get project details with all related data (Server Component)
 export async function getProjectDetails(projectId: string) {
-  const supabase = await createClient();
+  const supabase = await getReadClient();
 
   const { data: project, error } = await supabase
     .from("projects")
@@ -423,7 +446,7 @@ export async function getProjectDetails(projectId: string) {
         company_name,
         verification_score,
         tier,
-        profiles:user_id (full_name, email, phone)
+        profiles!contractors_user_id_fkey (full_name, email, phone)
       ),
       project_scope (description),
       project_requirements (requirement),
@@ -444,7 +467,7 @@ export async function getProjectDetails(projectId: string) {
 
 // Get project budget summary
 export async function getBudgetSummary(projectId: string) {
-  const supabase = await createClient();
+  const supabase = await getReadClient();
 
   const { data: items } = await supabase
     .from("budget_items")
@@ -469,7 +492,7 @@ export async function getBudgetSummary(projectId: string) {
 
 // Get project progress timeline
 export async function getProjectProgress(projectId: string) {
-  const supabase = await createClient();
+  const supabase = await getReadClient();
 
   const { data: updates } = await supabase
     .from("project_updates")

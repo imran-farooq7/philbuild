@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Project } from "@/components/projects/project-card";
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import { ProjectsPageFallback } from "@/components/projects/ProjectsPageFallback";
 export default function ProjectsPage() {
@@ -20,6 +21,7 @@ export default function ProjectsPage() {
 
 async function ProjectsContent() {
   const supabase = await createClient();
+  const adminSupabase = createAdminClient();
 
   const {
     data: { user },
@@ -27,7 +29,7 @@ async function ProjectsContent() {
   if (!user) redirect("/login");
 
   // Get user profile
-  const { data: profile } = await supabase
+  const { data: profile } = await adminSupabase
     .from("profiles")
     .select("user_type")
     .eq("id", user!?.id)
@@ -37,14 +39,14 @@ async function ProjectsContent() {
   let projects: Project[] = [];
 
   if (profile?.user_type === "buyer") {
-    const { data: buyer } = await supabase
+    const { data: buyer } = await adminSupabase
       .from("buyers")
       .select("id")
       .eq("user_id", user.id)
       .single();
 
     if (buyer) {
-      const { data } = await supabase
+      const { data } = await adminSupabase
         .from("projects")
         .select(
           `
@@ -52,7 +54,7 @@ async function ProjectsContent() {
           contractors:contractor_id (
             company_name,
             tier,
-            profiles:user_id (full_name)
+            profiles!contractors_user_id_fkey (full_name)
           )
         `,
         )
@@ -62,14 +64,14 @@ async function ProjectsContent() {
       projects = data || [];
     }
   } else if (profile?.user_type === "contractor") {
-    const { data: contractor } = await supabase
+    const { data: contractor } = await adminSupabase
       .from("contractors")
       .select("id")
       .eq("user_id", user.id)
       .single();
 
     if (contractor) {
-      const { data } = await supabase
+      const { data } = await adminSupabase
         .from("projects")
         .select(
           `
