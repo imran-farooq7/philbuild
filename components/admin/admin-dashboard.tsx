@@ -10,6 +10,7 @@ import { ReportsExport } from "./reports-export";
 import { SystemSettings } from "./system-settings";
 import { UserManagement } from "./user-management";
 import { ContractorManagement } from "./contractor-management";
+import { ProjectManagement } from "./project-management";
 
 type AnalyticsData = {
   overview: {
