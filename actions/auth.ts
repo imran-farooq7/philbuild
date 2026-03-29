@@ -30,16 +30,16 @@ export async function login(_state: LoginState, formData: FormData) {
     };
   }
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { error, data } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
 
   if (error) {
+    console.log(error.message);
     return { error: error.message };
   }
 
-  revalidatePath("/");
   redirect("/admin");
 }
 

@@ -1,16 +1,36 @@
 // app/(dashboard)/admin/page.tsx
 import { AdminDashboard } from "@/components/admin/admin-dashboard";
 import { redirect } from "next/navigation";
-// import { getPlatformAnalytics } from '@/app/actions/analytics' should be added back when analytics are implemented
-import { createAdminClient } from "@/lib/supabase/admin";
+import { getPlatformAnalytics } from "@/actions/analytics";
+import { createClient } from "@/lib/supabase/server";
 import { Suspense } from "react";
+import Loading from "./loading";
 
-export default async function AdminDashboardPage() {
-  const supabase = createAdminClient();
+export default function AdminDashboardPage() {
+  return (
+    <div className="container mx-auto py-10">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <p className="text-muted-foreground mt-2">
+          Manage platform users, verify contractors, and monitor platform
+          activity
+        </p>
+      </div>
+
+      <Suspense fallback={<Loading />}>
+        <AdminDashboardContent />
+      </Suspense>
+    </div>
+  );
+}
+
+async function AdminDashboardContent() {
+  const supabase = await createClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
   if (!user) redirect("/login");
 
   // Check if user is admin
@@ -24,21 +44,7 @@ export default async function AdminDashboardPage() {
     redirect("/dashboard");
   }
 
-  //   const analytics = await getPlatformAnalytics(30) should be added back when analytics are implemented
+  const analytics = await getPlatformAnalytics(30);
 
-  return (
-    <div className="container mx-auto py-10">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <p className="text-muted-foreground mt-2">
-          Manage platform users, verify contractors, and monitor platform
-          activity
-        </p>
-      </div>
-
-      <Suspense fallback={<div>Loading dashboard...</div>}>
-        <AdminDashboard />
-      </Suspense>
-    </div>
-  );
+  return <AdminDashboard analytics={analytics} />;
 }
