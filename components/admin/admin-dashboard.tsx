@@ -9,6 +9,7 @@ import { RecentActivity } from "./recent-activity";
 import { ReportsExport } from "./reports-export";
 import { SystemSettings } from "./system-settings";
 import { UserManagement } from "./user-management";
+import { ContractorManagement } from "./contractor-management";
 
 type AnalyticsData = {
   overview: {
@@ -40,7 +41,7 @@ type AnalyticsData = {
   averageProjectValue: number;
 };
 
-export function AdminDashboard({ analytics }: { analytics?: AnalyticsData }) {
+export function AdminDashboard({ analytics }: { analytics: AnalyticsData }) {
   return (
     <div className="space-y-6">
       {/* Quick Stats */}
