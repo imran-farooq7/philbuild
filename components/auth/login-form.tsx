@@ -14,7 +14,7 @@ import { login } from "@/actions/auth";
 import { toast } from "sonner";
 
 export function LoginForm() {
-  const [state, action, pending] = useActionState(login, undefined);
+  const [state, action, pending] = useActionState(login, {});
 
   useEffect(() => {
     if (state?.error) {

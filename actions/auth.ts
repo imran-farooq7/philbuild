@@ -2,6 +2,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
@@ -63,8 +64,10 @@ export async function signup(formData: FormData) {
       return { error: "Failed to create user account" };
     }
 
+    const admin = createAdminClient();
+
     // Create profile record
-    const { error: profileError } = await supabase.from("profiles").insert({
+    const { error: profileError } = await admin.from("profiles").insert({
       id: authData.user.id,
       email,
       full_name: fullName,
@@ -84,7 +87,7 @@ export async function signup(formData: FormData) {
 
     // Create role-specific record
     if (userType === "contractor") {
-      const { error: contractorError } = await supabase
+      const { error: contractorError } = await admin
         .from("contractors")
         .insert({
           user_id: authData.user.id,
@@ -102,7 +105,7 @@ export async function signup(formData: FormData) {
         };
       }
     } else if (userType === "buyer") {
-      const { error: buyerError } = await supabase.from("buyers").insert({
+      const { error: buyerError } = await admin.from("buyers").insert({
         user_id: authData.user.id,
         verified_phone: false,
         total_projects_initiated: 0,
@@ -118,7 +121,7 @@ export async function signup(formData: FormData) {
     }
 
     // Log user activity
-    await supabase.from("user_activity").insert({
+    await admin.from("user_activity").insert({
       user_id: authData.user.id,
       action: "user_register",
       entity_type: "user",
@@ -132,6 +135,100 @@ export async function signup(formData: FormData) {
     return { success: true, requiresEmailConfirmation: true };
   } catch (error) {
     console.error("Signup error:", error);
+    return { error: "An unexpected error occurred. Please try again." };
+  }
+}
+
+type LoginState = {
+  error?: string;
+  fieldErrors?: {
+    email?: string;
+    password?: string;
+  };
+  success?: boolean;
+  requiresEmailConfirmation?: boolean;
+};
+
+function isNextRedirectError(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const digest = (error as { digest?: unknown }).digest;
+  return typeof digest === "string" && digest.startsWith("NEXT_REDIRECT");
+}
+
+export async function login(
+  _prevState: LoginState | undefined,
+  formData: FormData,
+): Promise<LoginState> {
+  const supabase = await createClient();
+
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+
+  if (!email || !password) {
+    return {
+      error: "Email and password are required",
+      fieldErrors: {
+        email: email ? undefined : "Email is required",
+        password: password ? undefined : "Password is required",
+      },
+    };
+  }
+
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      if (error.message.toLowerCase().includes("email not confirmed")) {
+        return {
+          error: "Please confirm your email before signing in.",
+          requiresEmailConfirmation: true,
+        };
+      }
+      return { error: error.message };
+    }
+
+    if (!data.user) {
+      return { error: "Login failed. Please try again." };
+    }
+
+    const admin = createAdminClient();
+    const { data: profile, error: profileError } = await admin
+      .from("profiles")
+      .select("user_type")
+      .eq("id", data.user.id)
+      .single();
+
+    if (profileError) {
+      console.error("Profile lookup error:", profileError);
+      return { error: "Failed to load profile. Please try again." };
+    }
+
+    await admin.from("user_activity").insert({
+      user_id: data.user.id,
+      action: "user_login",
+      entity_type: "user",
+      entity_id: data.user.id,
+    });
+
+    revalidatePath("/");
+
+    if (profile?.user_type === "buyer") {
+      redirect("/buyer/profile");
+    }
+
+    if (profile?.user_type === "contractor") {
+      redirect("/contractor/profile");
+    }
+
+    return { success: true };
+  } catch (error) {
+    if (isNextRedirectError(error)) {
+      throw error;
+    }
+    console.error("Login error:", error);
     return { error: "An unexpected error occurred. Please try again." };
   }
 }
