@@ -222,6 +222,9 @@ export async function login(
     if (profile?.user_type === "contractor") {
       redirect("/contractor/profile");
     }
+    if (profile?.user_type === "admin") {
+      redirect("/admin");
+    }
 
     return { success: true };
   } catch (error) {

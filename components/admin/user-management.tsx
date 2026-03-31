@@ -75,6 +75,7 @@ export function UserManagement() {
     try {
       const response = await fetch("/api/admin/users");
       const data = await response.json();
+      console.log(data, "user from api");
       setUsers(data);
     } catch (error) {
       console.error("Error fetching users:", error);
