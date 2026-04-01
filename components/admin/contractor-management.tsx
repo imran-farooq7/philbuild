@@ -37,6 +37,7 @@ import {
   Clock,
   Download,
   Eye,
+  Loader2,
   Search,
   Star,
   XCircle,
@@ -74,6 +75,7 @@ export function ContractorManagement() {
   const [selectedContractor, setSelectedContractor] =
     useState<Contractor | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [verifyingId, setVerifyingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchContractors();
@@ -82,6 +84,7 @@ export function ContractorManagement() {
   const fetchContractors = async () => {
     try {
       const response = await fetch("/api/admin/contractors");
+
       const data = await response.json();
       setContractors(data);
     } catch (error) {
@@ -97,6 +100,7 @@ export function ContractorManagement() {
     notes?: string,
   ) => {
     try {
+      setVerifyingId(contractorId);
       await verifyContractor(contractorId, approved, notes);
       toast(
         approved
@@ -109,6 +113,8 @@ export function ContractorManagement() {
       toast.error(
         error instanceof Error ? error.message : "Failed to process request",
       );
+    } finally {
+      setVerifyingId(null);
     }
   };
 
@@ -172,272 +178,300 @@ export function ContractorManagement() {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Contractor Management</CardTitle>
-        <CardDescription>
-          Verify contractors and manage their credentials
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {/* Search Bar */}
-        <div className="relative mb-6">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search contractors by name or email..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9"
-          />
-        </div>
+      {isLoading ? (
+        <Loader2 className="mx-auto animate-spin w-8 h-8" size="xl" />
+      ) : (
+        <>
+          <CardHeader>
+            <CardTitle>Contractor Management</CardTitle>
+            <CardDescription>
+              Verify contractors and manage their credentials
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {/* Search Bar */}
+            <div className="relative mb-6">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search contractors by name or email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9"
+              />
+            </div>
 
-        {/* Tabs */}
-        <Tabs defaultValue="all" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="all">All ({contractors.length})</TabsTrigger>
-            <TabsTrigger value="pending">Pending ({pendingCount})</TabsTrigger>
-            <TabsTrigger value="verified">
-              Verified ({verifiedCount})
-            </TabsTrigger>
-            <TabsTrigger value="rejected">
-              Rejected ({rejectedCount})
-            </TabsTrigger>
-          </TabsList>
+            {/* Tabs */}
+            <Tabs defaultValue="all" className="space-y-4">
+              <TabsList>
+                <TabsTrigger value="all">
+                  All ({contractors.length})
+                </TabsTrigger>
+                <TabsTrigger value="pending">
+                  Pending ({pendingCount})
+                </TabsTrigger>
+                <TabsTrigger value="verified">
+                  Verified ({verifiedCount})
+                </TabsTrigger>
+                <TabsTrigger value="rejected">
+                  Rejected ({rejectedCount})
+                </TabsTrigger>
+              </TabsList>
 
-          <TabsContent value="all" className="space-y-4">
-            <ContractorTable
-              contractors={filteredContractors}
-              onViewDetails={setSelectedContractor}
-            />
-          </TabsContent>
+              <TabsContent value="all" className="space-y-4">
+                <ContractorTable
+                  contractors={filteredContractors}
+                  onViewDetails={setSelectedContractor}
+                  onVerify={(id) => handleVerify(id, true)}
+                  verifyingId={verifyingId}
+                />
+              </TabsContent>
 
-          <TabsContent value="pending" className="space-y-4">
-            <ContractorTable
-              contractors={filteredContractors.filter(
-                (c) => c.verification_status === "pending",
-              )}
-              onViewDetails={setSelectedContractor}
-            />
-          </TabsContent>
+              <TabsContent value="pending" className="space-y-4">
+                <ContractorTable
+                  contractors={filteredContractors.filter(
+                    (c) => c.verification_status === "pending",
+                  )}
+                  onViewDetails={setSelectedContractor}
+                  onVerify={(id) => handleVerify(id, true)}
+                  verifyingId={verifyingId}
+                />
+              </TabsContent>
 
-          <TabsContent value="verified" className="space-y-4">
-            <ContractorTable
-              contractors={filteredContractors.filter(
-                (c) => c.verification_status === "verified",
-              )}
-              onViewDetails={setSelectedContractor}
-            />
-          </TabsContent>
+              <TabsContent value="verified" className="space-y-4">
+                <ContractorTable
+                  contractors={filteredContractors.filter(
+                    (c) => c.verification_status === "verified",
+                  )}
+                  onViewDetails={setSelectedContractor}
+                  onVerify={(id) => handleVerify(id, true)}
+                  verifyingId={verifyingId}
+                />
+              </TabsContent>
 
-          <TabsContent value="rejected" className="space-y-4">
-            <ContractorTable
-              contractors={filteredContractors.filter(
-                (c) => c.verification_status === "rejected",
-              )}
-              onViewDetails={setSelectedContractor}
-            />
-          </TabsContent>
-        </Tabs>
+              <TabsContent value="rejected" className="space-y-4">
+                <ContractorTable
+                  contractors={filteredContractors.filter(
+                    (c) => c.verification_status === "rejected",
+                  )}
+                  onViewDetails={setSelectedContractor}
+                  onVerify={(id) => handleVerify(id, true)}
+                  verifyingId={verifyingId}
+                />
+              </TabsContent>
+            </Tabs>
 
-        {/* Contractor Details Dialog */}
-        <Dialog
-          open={!!selectedContractor}
-          onOpenChange={() => setSelectedContractor(null)}
-        >
-          <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-            {selectedContractor && (
-              <>
-                <DialogHeader>
-                  <DialogTitle>Review Contractor Application</DialogTitle>
-                  <DialogDescription>
-                    Verify documents and company information
-                  </DialogDescription>
-                </DialogHeader>
+            {/* Contractor Details Dialog */}
+            <Dialog
+              open={!!selectedContractor}
+              onOpenChange={() => setSelectedContractor(null)}
+            >
+              <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+                {selectedContractor && (
+                  <>
+                    <DialogHeader>
+                      <DialogTitle>Review Contractor Application</DialogTitle>
+                      <DialogDescription>
+                        Verify documents and company information
+                      </DialogDescription>
+                    </DialogHeader>
 
-                <div className="space-y-6">
-                  {/* Header */}
-                  <div className="flex items-center gap-4 p-4 bg-muted rounded-lg">
-                    <Avatar className="h-16 w-16">
-                      <AvatarImage
-                        src={selectedContractor.profile.avatar_url || undefined}
-                      />
-                      <AvatarFallback className="text-2xl">
-                        {selectedContractor.company_name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-xl font-semibold">
-                          {selectedContractor.company_name}
-                        </h3>
-                        {getStatusBadge(selectedContractor.verification_status)}
-                        {selectedContractor.tier && (
-                          <Badge
-                            className={getTierColor(selectedContractor.tier)}
+                    <div className="space-y-6">
+                      {/* Header */}
+                      <div className="flex items-center gap-4 p-4 bg-muted rounded-lg">
+                        <Avatar className="h-16 w-16">
+                          <AvatarImage
+                            src={
+                              selectedContractor.profile.avatar_url || undefined
+                            }
+                          />
+                          <AvatarFallback className="text-2xl">
+                            {selectedContractor.company_name.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-xl font-semibold">
+                              {selectedContractor.company_name}
+                            </h3>
+                            {getStatusBadge(
+                              selectedContractor.verification_status,
+                            )}
+                            {selectedContractor.tier && (
+                              <Badge
+                                className={getTierColor(
+                                  selectedContractor.tier,
+                                )}
+                              >
+                                {selectedContractor.tier.toUpperCase()} TIER
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-muted-foreground">
+                            {selectedContractor.profile.email}
+                          </p>
+                          <p className="text-sm">
+                            {selectedContractor.profile.phone}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Company Details */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            Years in Business
+                          </p>
+                          <p className="font-medium">
+                            {selectedContractor.years_in_business} years
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            Team Size
+                          </p>
+                          <p className="font-medium">
+                            {selectedContractor.team_size} employees
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            Verification Score
+                          </p>
+                          <div className="space-y-1">
+                            <p className="font-medium">
+                              {selectedContractor.verification_score}/100
+                            </p>
+                            <Progress
+                              value={selectedContractor.verification_score}
+                              className="h-2"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            Projects Completed
+                          </p>
+                          <p className="font-medium">
+                            {selectedContractor.total_projects_completed}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Certifications */}
+                      {selectedContractor.certifications.length > 0 && (
+                        <div>
+                          <h4 className="font-semibold mb-2">Certifications</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {selectedContractor.certifications.map(
+                              (cert, idx) => (
+                                <Badge key={idx} variant="outline">
+                                  <Award className="h-3 w-3 mr-1" />
+                                  {cert}
+                                </Badge>
+                              ),
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Documents */}
+                      <div>
+                        <h4 className="font-semibold mb-2">Documents</h4>
+                        <div className="space-y-2">
+                          {selectedContractor.business_permit && (
+                            <div className="flex items-center justify-between p-2 border rounded">
+                              <span>Business Permit</span>
+                              <Button variant="ghost" size="sm" asChild>
+                                <a
+                                  href={selectedContractor.business_permit}
+                                  target="_blank"
+                                >
+                                  <Download className="h-4 w-4" />
+                                </a>
+                              </Button>
+                            </div>
+                          )}
+                          {selectedContractor.pcab_license && (
+                            <div className="flex items-center justify-between p-2 border rounded">
+                              <span>PCAB License</span>
+                              <Button variant="ghost" size="sm" asChild>
+                                <a
+                                  href={selectedContractor.pcab_license}
+                                  target="_blank"
+                                >
+                                  <Download className="h-4 w-4" />
+                                </a>
+                              </Button>
+                            </div>
+                          )}
+                          {selectedContractor.bir_registration && (
+                            <div className="flex items-center justify-between p-2 border rounded">
+                              <span>BIR Registration</span>
+                              <Button variant="ghost" size="sm" asChild>
+                                <a
+                                  href={selectedContractor.bir_registration}
+                                  target="_blank"
+                                >
+                                  <Download className="h-4 w-4" />
+                                </a>
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Rating */}
+                      {selectedContractor.average_rating && (
+                        <div>
+                          <h4 className="font-semibold mb-2">Rating</h4>
+                          <div className="flex items-center gap-2">
+                            <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                            <span className="font-medium">
+                              {selectedContractor.average_rating}
+                            </span>
+                            <span className="text-muted-foreground">/ 5.0</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <DialogFooter className="gap-2">
+                      {selectedContractor.verification_status === "pending" && (
+                        <>
+                          <Button
+                            variant="destructive"
+                            onClick={() =>
+                              handleVerify(selectedContractor.id, false)
+                            }
                           >
-                            {selectedContractor.tier.toUpperCase()} TIER
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-muted-foreground">
-                        {selectedContractor.profile.email}
-                      </p>
-                      <p className="text-sm">
-                        {selectedContractor.profile.phone}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Company Details */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        Years in Business
-                      </p>
-                      <p className="font-medium">
-                        {selectedContractor.years_in_business} years
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Team Size</p>
-                      <p className="font-medium">
-                        {selectedContractor.team_size} employees
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        Verification Score
-                      </p>
-                      <div className="space-y-1">
-                        <p className="font-medium">
-                          {selectedContractor.verification_score}/100
-                        </p>
-                        <Progress
-                          value={selectedContractor.verification_score}
-                          className="h-2"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        Projects Completed
-                      </p>
-                      <p className="font-medium">
-                        {selectedContractor.total_projects_completed}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Certifications */}
-                  {selectedContractor.certifications.length > 0 && (
-                    <div>
-                      <h4 className="font-semibold mb-2">Certifications</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedContractor.certifications.map((cert, idx) => (
-                          <Badge key={idx} variant="outline">
-                            <Award className="h-3 w-3 mr-1" />
-                            {cert}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Documents */}
-                  <div>
-                    <h4 className="font-semibold mb-2">Documents</h4>
-                    <div className="space-y-2">
-                      {selectedContractor.business_permit && (
-                        <div className="flex items-center justify-between p-2 border rounded">
-                          <span>Business Permit</span>
-                          <Button variant="ghost" size="sm" asChild>
-                            <a
-                              href={selectedContractor.business_permit}
-                              target="_blank"
-                            >
-                              <Download className="h-4 w-4" />
-                            </a>
+                            <XCircle className="h-4 w-4 mr-2" />
+                            Reject
                           </Button>
-                        </div>
-                      )}
-                      {selectedContractor.pcab_license && (
-                        <div className="flex items-center justify-between p-2 border rounded">
-                          <span>PCAB License</span>
-                          <Button variant="ghost" size="sm" asChild>
-                            <a
-                              href={selectedContractor.pcab_license}
-                              target="_blank"
-                            >
-                              <Download className="h-4 w-4" />
-                            </a>
+                          <Button
+                            variant="default"
+                            onClick={() =>
+                              handleVerify(selectedContractor.id, true)
+                            }
+                          >
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                            Approve
                           </Button>
-                        </div>
+                        </>
                       )}
-                      {selectedContractor.bir_registration && (
-                        <div className="flex items-center justify-between p-2 border rounded">
-                          <span>BIR Registration</span>
-                          <Button variant="ghost" size="sm" asChild>
-                            <a
-                              href={selectedContractor.bir_registration}
-                              target="_blank"
-                            >
-                              <Download className="h-4 w-4" />
-                            </a>
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Rating */}
-                  {selectedContractor.average_rating && (
-                    <div>
-                      <h4 className="font-semibold mb-2">Rating</h4>
-                      <div className="flex items-center gap-2">
-                        <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                        <span className="font-medium">
-                          {selectedContractor.average_rating}
-                        </span>
-                        <span className="text-muted-foreground">/ 5.0</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <DialogFooter className="gap-2">
-                  {selectedContractor.verification_status === "pending" && (
-                    <>
                       <Button
-                        variant="destructive"
-                        onClick={() =>
-                          handleVerify(selectedContractor.id, false)
-                        }
+                        variant="outline"
+                        onClick={() => setSelectedContractor(null)}
                       >
-                        <XCircle className="h-4 w-4 mr-2" />
-                        Reject
+                        Close
                       </Button>
-                      <Button
-                        variant="default"
-                        onClick={() =>
-                          handleVerify(selectedContractor.id, true)
-                        }
-                      >
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        Approve
-                      </Button>
-                    </>
-                  )}
-                  <Button
-                    variant="outline"
-                    onClick={() => setSelectedContractor(null)}
-                  >
-                    Close
-                  </Button>
-                </DialogFooter>
-              </>
-            )}
-          </DialogContent>
-        </Dialog>
-      </CardContent>
+                    </DialogFooter>
+                  </>
+                )}
+              </DialogContent>
+            </Dialog>
+          </CardContent>
+        </>
+      )}
     </Card>
   );
 }
@@ -445,9 +479,13 @@ export function ContractorManagement() {
 function ContractorTable({
   contractors,
   onViewDetails,
+  onVerify,
+  verifyingId,
 }: {
   contractors: Contractor[];
   onViewDetails: (c: Contractor) => void;
+  onVerify: (id: string) => void;
+  verifyingId: string | null;
 }) {
   if (contractors.length === 0) {
     return (
@@ -511,13 +549,35 @@ function ContractorTable({
               </TableCell>
               <TableCell>{contractor.total_projects_completed}</TableCell>
               <TableCell className="text-right">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onViewDetails(contractor)}
-                >
-                  <Eye className="h-4 w-4" />
-                </Button>
+                <div className="flex justify-end gap-2">
+                  {contractor.verification_status === "pending" && (
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => onVerify(contractor.id)}
+                      disabled={verifyingId === contractor.id}
+                    >
+                      {verifyingId === contractor.id ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                          Verifying
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          Verify
+                        </>
+                      )}
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onViewDetails(contractor)}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           ))}

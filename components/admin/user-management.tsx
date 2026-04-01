@@ -1,6 +1,7 @@
 // components/admin/user-management.tsx
 "use client";
 
+import Loading from "@/app/(dashboard)/admin/loading";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -37,7 +38,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDistanceToNow } from "date-fns";
-import { Mail, MoreVertical, Search, Shield, UserX } from "lucide-react";
+import {
+  Loader2,
+  Mail,
+  MoreVertical,
+  Search,
+  Shield,
+  UserX,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -165,7 +173,7 @@ export function UserManagement() {
 
         {/* Users Table */}
         {isLoading ? (
-          <div className="text-center py-8">Loading users...</div>
+          <Loader2 className="animate-spin h-8 w-8 mx-auto" />
         ) : (
           <div className="border rounded-lg">
             <Table>
