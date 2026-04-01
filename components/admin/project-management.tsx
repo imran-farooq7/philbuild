@@ -231,10 +231,10 @@ export function ProjectManagement() {
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">
-                        {project.buyer.profile.full_name}
+                        {project.buyer?.profile.full_name ?? "Unknown Client"}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        {project.buyer.company_name}
+                        {project.buyer?.company_name ?? "No Company"}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -260,13 +260,34 @@ export function ProjectManagement() {
                       })}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSelectedProject(project)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        <Select
+                          onValueChange={(value) =>
+                            handleUpdateStatus(project.id, value)
+                          }
+                        >
+                          <SelectTrigger className="w-36 h-8">
+                            <SelectValue placeholder="Update status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="active">Set Active</SelectItem>
+                            <SelectItem value="pending">Set Pending</SelectItem>
+                            <SelectItem value="completed">
+                              Set Completed
+                            </SelectItem>
+                            <SelectItem value="cancelled">
+                              Set Cancelled
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedProject(project)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
