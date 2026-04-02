@@ -76,17 +76,17 @@ export function RecentActivity() {
   const getActivityText = (activity: Activity) => {
     switch (activity.action) {
       case "user_register":
-        return `${activity.user.full_name} registered as a ${activity.metadata.user_type}`;
+        return `${activity.user?.full_name} registered as a ${activity.metadata.user_type}`;
       case "project_create":
-        return `${activity.user.full_name} created project "${activity.metadata.project_title}"`;
+        return `${activity.user?.full_name} created project "${activity.metadata.project_title}"`;
       case "project_complete":
         return `Project "${activity.metadata.project_title}" was marked as completed`;
       case "review_submit":
-        return `${activity.user.full_name} left a ${activity.metadata.rating}-star review`;
+        return `${activity.user?.full_name} left a ${activity.metadata.rating}-star review`;
       case "contractor_verify":
         return `${activity.metadata.contractor_name} was verified as a contractor`;
       default:
-        return `${activity.user.full_name} performed ${activity.action}`;
+        return `${activity.user?.full_name} performed ${activity.action}`;
     }
   };
 
@@ -121,9 +121,9 @@ export function RecentActivity() {
             {activities.map((activity) => (
               <div key={activity.id} className="flex items-start gap-4">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={activity.user.avatar_url || undefined} />
+                  <AvatarImage src={activity.user?.avatar_url || undefined} />
                   <AvatarFallback>
-                    {activity.user.full_name?.charAt(0) || "U"}
+                    {activity.user?.full_name?.charAt(0) || "U"}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 space-y-1">
