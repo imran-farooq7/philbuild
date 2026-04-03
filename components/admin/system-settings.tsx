@@ -21,23 +21,23 @@ import { toast } from "sonner";
 export function SystemSettings() {
   const [settings, setSettings] = useState({
     // General Settings
-    platformName: "PHILbuild",
-    platformEmail: "support@philbuild.com",
-    contactPhone: "+63 2 8123 4567",
-    maintenanceMode: false,
+    platform_name: "PHILbuild",
+    platform_email: "support@philbuild.com",
+    contact_phone: "+63 2 8123 4567",
+    maintenance_mode: false,
 
     // Verification Settings
-    autoVerifyThreshold: 70,
-    requireDocuments: true,
-    verificationTimeout: 7,
+    autoVerify_threshold: 70,
+    require_documents: true,
+    verification_timeout: 7,
 
     // Notification Settings
-    emailNotifications: true,
-    pushNotifications: true,
-    adminAlertEmail: "admin@philbuild.com",
+    email_notifications: true,
+    push_notifications: true,
+    admin_alert_email: "admin@philbuild.com",
 
     // Project Settings
-    defaultProjectDuration: 90,
+    default_project_Duration: 90,
     maxBudgetLimit: 1000000000,
     requireInsurance: true,
 
@@ -109,9 +109,12 @@ export function SystemSettings() {
                 <div className="space-y-2">
                   <Label>Platform Name</Label>
                   <Input
-                    value={settings.platformName}
+                    value={settings.platform_name}
                     onChange={(e) =>
-                      setSettings({ ...settings, platformName: e.target.value })
+                      setSettings({
+                        ...settings,
+                        platform_name: e.target.value,
+                      })
                     }
                   />
                 </div>
@@ -119,11 +122,11 @@ export function SystemSettings() {
                   <Label>Support Email</Label>
                   <Input
                     type="email"
-                    value={settings.platformEmail}
+                    value={settings.platform_email}
                     onChange={(e) =>
                       setSettings({
                         ...settings,
-                        platformEmail: e.target.value,
+                        platform_email: e.target.value,
                       })
                     }
                   />
@@ -133,9 +136,9 @@ export function SystemSettings() {
               <div className="space-y-2">
                 <Label>Contact Phone</Label>
                 <Input
-                  value={settings.contactPhone}
+                  value={settings.contact_phone}
                   onChange={(e) =>
-                    setSettings({ ...settings, contactPhone: e.target.value })
+                    setSettings({ ...settings, contact_phone: e.target.value })
                   }
                 />
               </div>
@@ -148,9 +151,9 @@ export function SystemSettings() {
                   </p>
                 </div>
                 <Switch
-                  checked={settings.maintenanceMode}
+                  checked={settings.maintenance_mode}
                   onCheckedChange={(checked: boolean) =>
-                    setSettings({ ...settings, maintenanceMode: checked })
+                    setSettings({ ...settings, maintenance_mode: checked })
                   }
                 />
               </div>
@@ -164,11 +167,11 @@ export function SystemSettings() {
                 <Label>Auto-Verify Threshold (Score)</Label>
                 <Input
                   type="number"
-                  value={settings.autoVerifyThreshold}
+                  value={settings.autoVerify_threshold}
                   onChange={(e) =>
                     setSettings({
                       ...settings,
-                      autoVerifyThreshold: parseInt(e.target.value),
+                      autoVerify_threshold: parseInt(e.target.value),
                     })
                   }
                 />
@@ -182,11 +185,11 @@ export function SystemSettings() {
                 <Label>Verification Timeout (Days)</Label>
                 <Input
                   type="number"
-                  value={settings.verificationTimeout}
+                  value={settings.verification_timeout}
                   onChange={(e) =>
                     setSettings({
                       ...settings,
-                      verificationTimeout: parseInt(e.target.value),
+                      verification_timeout: parseInt(e.target.value),
                     })
                   }
                 />
@@ -203,9 +206,9 @@ export function SystemSettings() {
                   </p>
                 </div>
                 <Switch
-                  checked={settings.requireDocuments}
+                  checked={settings.require_documents}
                   onCheckedChange={(checked: boolean) =>
-                    setSettings({ ...settings, requireDocuments: checked })
+                    setSettings({ ...settings, require_documents: checked })
                   }
                 />
               </div>
@@ -223,9 +226,9 @@ export function SystemSettings() {
                   </p>
                 </div>
                 <Switch
-                  checked={settings.emailNotifications}
+                  checked={settings.email_notifications}
                   onCheckedChange={(checked: boolean) =>
-                    setSettings({ ...settings, emailNotifications: checked })
+                    setSettings({ ...settings, email_notifications: checked })
                   }
                 />
               </div>
@@ -238,9 +241,9 @@ export function SystemSettings() {
                   </p>
                 </div>
                 <Switch
-                  checked={settings.pushNotifications}
+                  checked={settings.push_notifications}
                   onCheckedChange={(checked: boolean) =>
-                    setSettings({ ...settings, pushNotifications: checked })
+                    setSettings({ ...settings, push_notifications: checked })
                   }
                 />
               </div>
@@ -249,11 +252,11 @@ export function SystemSettings() {
                 <Label>Admin Alert Email</Label>
                 <Input
                   type="email"
-                  value={settings.adminAlertEmail}
+                  value={settings.admin_alert_email}
                   onChange={(e) =>
                     setSettings({
                       ...settings,
-                      adminAlertEmail: e.target.value,
+                      admin_alert_email: e.target.value,
                     })
                   }
                 />
@@ -271,11 +274,11 @@ export function SystemSettings() {
                 <Label>Default Project Duration (Days)</Label>
                 <Input
                   type="number"
-                  value={settings.defaultProjectDuration}
+                  value={settings.default_project_Duration}
                   onChange={(e) =>
                     setSettings({
                       ...settings,
-                      defaultProjectDuration: parseInt(e.target.value),
+                      default_project_Duration: parseInt(e.target.value),
                     })
                   }
                 />

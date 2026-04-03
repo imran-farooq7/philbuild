@@ -423,7 +423,9 @@ export type Database = {
           email: string
           full_name: string | null
           id: string
+          is_suspended: boolean | null
           phone: string | null
+          suspended_at: string | null
           updated_at: string | null
           user_type: string | null
         }
@@ -433,7 +435,9 @@ export type Database = {
           email: string
           full_name?: string | null
           id: string
+          is_suspended?: boolean | null
           phone?: string | null
+          suspended_at?: string | null
           updated_at?: string | null
           user_type?: string | null
         }
@@ -443,7 +447,9 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
+          is_suspended?: boolean | null
           phone?: string | null
+          suspended_at?: string | null
           updated_at?: string | null
           user_type?: string | null
         }
@@ -567,6 +573,7 @@ export type Database = {
           awarded_at: string | null
           budget: number | null
           buyer_id: string
+          completed_at: string | null
           completion_percentage: number | null
           contractor_id: string | null
           created_at: string | null
@@ -574,6 +581,7 @@ export type Database = {
           description: string | null
           end_date: string | null
           id: string
+          metadata: Json | null
           published_at: string | null
           start_date: string | null
           status: string | null
@@ -585,6 +593,7 @@ export type Database = {
           awarded_at?: string | null
           budget?: number | null
           buyer_id: string
+          completed_at?: string | null
           completion_percentage?: number | null
           contractor_id?: string | null
           created_at?: string | null
@@ -592,6 +601,7 @@ export type Database = {
           description?: string | null
           end_date?: string | null
           id?: string
+          metadata?: Json | null
           published_at?: string | null
           start_date?: string | null
           status?: string | null
@@ -603,6 +613,7 @@ export type Database = {
           awarded_at?: string | null
           budget?: number | null
           buyer_id?: string
+          completed_at?: string | null
           completion_percentage?: number | null
           contractor_id?: string | null
           created_at?: string | null
@@ -610,6 +621,7 @@ export type Database = {
           description?: string | null
           end_date?: string | null
           id?: string
+          metadata?: Json | null
           published_at?: string | null
           start_date?: string | null
           status?: string | null
@@ -685,6 +697,83 @@ export type Database = {
           {
             foreignKeyName: "reviews_reviewer_id_fkey"
             columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      system_settings: {
+        Row: {
+          admin_alert_email: string | null
+          auto_verify_threshold: number | null
+          contact_phone: string | null
+          created_at: string | null
+          default_project_duration: number | null
+          email_notifications: boolean | null
+          id: number
+          maintenance_mode: boolean | null
+          max_budget_limit: number | null
+          max_platform_fee: number | null
+          min_platform_fee: number | null
+          platform_email: string | null
+          platform_fee: number | null
+          platform_name: string | null
+          push_notifications: boolean | null
+          require_documents: boolean | null
+          require_insurance: boolean | null
+          updated_at: string | null
+          updated_by: string | null
+          verification_timeout: number | null
+        }
+        Insert: {
+          admin_alert_email?: string | null
+          auto_verify_threshold?: number | null
+          contact_phone?: string | null
+          created_at?: string | null
+          default_project_duration?: number | null
+          email_notifications?: boolean | null
+          id?: number
+          maintenance_mode?: boolean | null
+          max_budget_limit?: number | null
+          max_platform_fee?: number | null
+          min_platform_fee?: number | null
+          platform_email?: string | null
+          platform_fee?: number | null
+          platform_name?: string | null
+          push_notifications?: boolean | null
+          require_documents?: boolean | null
+          require_insurance?: boolean | null
+          updated_at?: string | null
+          updated_by?: string | null
+          verification_timeout?: number | null
+        }
+        Update: {
+          admin_alert_email?: string | null
+          auto_verify_threshold?: number | null
+          contact_phone?: string | null
+          created_at?: string | null
+          default_project_duration?: number | null
+          email_notifications?: boolean | null
+          id?: number
+          maintenance_mode?: boolean | null
+          max_budget_limit?: number | null
+          max_platform_fee?: number | null
+          min_platform_fee?: number | null
+          platform_email?: string | null
+          platform_fee?: number | null
+          platform_name?: string | null
+          push_notifications?: boolean | null
+          require_documents?: boolean | null
+          require_insurance?: boolean | null
+          updated_at?: string | null
+          updated_by?: string | null
+          verification_timeout?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "system_settings_updated_by_fkey"
+            columns: ["updated_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
