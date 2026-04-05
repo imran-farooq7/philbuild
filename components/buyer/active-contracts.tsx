@@ -15,6 +15,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
+import { headers } from "next/headers";
 
 type Contract = {
   id: string;
@@ -35,7 +36,23 @@ type Contract = {
 };
 
 export async function ActiveContracts() {
-  const response = await fetch("/api/buyer/active-contracts");
+  const headersList = await headers();
+  const envBaseUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "");
+  let baseUrl = envBaseUrl;
+
+  if (!baseUrl) {
+    const host =
+      headersList.get("x-forwarded-host") ?? headersList.get("host") ?? "";
+    const protocol = headersList.get("x-forwarded-proto") ?? "http";
+    baseUrl = host ? `${protocol}://${host}` : "";
+  }
+
+  const cookieHeader = headersList.get("cookie") ?? "";
+  const response = await fetch(`${baseUrl}/api/buyer/active-contracts`, {
+    headers: cookieHeader ? { cookie: cookieHeader } : {},
+  });
   const contracts = (await response.json()) as Contract[];
 
   const formatCurrency = (amount: number) => {

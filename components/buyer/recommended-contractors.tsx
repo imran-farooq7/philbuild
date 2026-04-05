@@ -1,7 +1,8 @@
 // components/buyer/recommended-contractors.tsx
-"use client";
 
-import { useState, useEffect } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -10,18 +11,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import {
-  Star,
-  Briefcase,
-  CheckCircle,
-  MessageSquare,
-  TrendingUp,
   Award,
+  Briefcase,
+  MessageSquare,
+  Star,
+  TrendingUp,
 } from "lucide-react";
+import { headers } from "next/headers";
 import Link from "next/link";
 
 type Contractor = {
@@ -41,7 +39,23 @@ type Contractor = {
 };
 
 export async function RecommendedContractors() {
-  const response = await fetch("/api/buyer/recommended-contractors");
+  const headersList = await headers();
+  const envBaseUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "");
+  let baseUrl = envBaseUrl;
+
+  if (!baseUrl) {
+    const host =
+      headersList.get("x-forwarded-host") ?? headersList.get("host") ?? "";
+    const protocol = headersList.get("x-forwarded-proto") ?? "http";
+    baseUrl = host ? `${protocol}://${host}` : "";
+  }
+
+  const cookieHeader = headersList.get("cookie") ?? "";
+  const response = await fetch(`${baseUrl}/api/buyer/recommended-contractors`, {
+    headers: cookieHeader ? { cookie: cookieHeader } : {},
+  });
   const contractors = (await response.json()) as Contractor[];
 
   const getTierColor = (tier: string) => {

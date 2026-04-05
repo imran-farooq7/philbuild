@@ -195,7 +195,6 @@ export async function getVerifiedContractors() {
     .order("created_at", { ascending: false });
 
   if (error) throw error;
-  console.log(contractors, "ver");
   return contractors;
 }
 

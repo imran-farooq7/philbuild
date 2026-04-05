@@ -14,6 +14,7 @@ import { Progress } from "@/components/ui/progress";
 import { format } from "date-fns";
 import { Briefcase, Calendar, DollarSign, Eye, Plus, User } from "lucide-react";
 import Link from "next/link";
+import { headers } from "next/headers";
 
 type Project = {
   id: string;
@@ -33,8 +34,25 @@ type Project = {
 };
 
 export async function RecentProjects() {
-  const response = await fetch("/api/buyer/projects");
+  const headersList = await headers();
+  const envBaseUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "");
+  let baseUrl = envBaseUrl;
+
+  if (!baseUrl) {
+    const host =
+      headersList.get("x-forwarded-host") ?? headersList.get("host") ?? "";
+    const protocol = headersList.get("x-forwarded-proto") ?? "http";
+    baseUrl = host ? `${protocol}://${host}` : "";
+  }
+
+  const cookieHeader = headersList.get("cookie") ?? "";
+  const response = await fetch(`${baseUrl}/api/buyer/projects`, {
+    headers: cookieHeader ? { cookie: cookieHeader } : {},
+  });
   const data = await response.json();
+  console.log(data, " projects from api");
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -69,7 +87,7 @@ export async function RecentProjects() {
           <p className="text-muted-foreground">
             Create your first project to get started
           </p>
-          <Link href="/dashboard/projects/create">
+          <Link href="buyer/projects/create">
             <Button className="mt-4">
               <Plus className="h-4 w-4 mr-2" />
               Create Project

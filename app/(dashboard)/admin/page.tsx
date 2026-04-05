@@ -39,7 +39,6 @@ async function AdminDashboardContent() {
     .select("user_type")
     .eq("id", user.id)
     .single();
-  console.log(profile);
   if (profile?.user_type !== "admin") {
     redirect("/dashboard");
   }

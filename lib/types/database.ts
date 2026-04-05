@@ -192,6 +192,35 @@ export type Database = {
           },
         ]
       }
+      contractor_specialties: {
+        Row: {
+          contractor_id: string
+          created_at: string | null
+          id: string
+          specialty: string
+        }
+        Insert: {
+          contractor_id: string
+          created_at?: string | null
+          id?: string
+          specialty: string
+        }
+        Update: {
+          contractor_id?: string
+          created_at?: string | null
+          id?: string
+          specialty?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_specialties_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contractors: {
         Row: {
           average_rating: number | null

@@ -33,6 +33,14 @@ CREATE TABLE public.contractors (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Contractor specialties
+CREATE TABLE public.contractor_specialties (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    contractor_id UUID REFERENCES public.contractors(id) ON DELETE CASCADE NOT NULL,
+    specialty TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Buyers table
 CREATE TABLE public.buyers (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -122,6 +130,7 @@ CREATE TABLE public.documents (
 -- Enable Row Level Security
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.contractors ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.contractor_specialties ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.buyers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.project_updates ENABLE ROW LEVEL SECURITY;

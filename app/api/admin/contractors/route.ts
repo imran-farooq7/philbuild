@@ -42,11 +42,7 @@ export async function GET(request: Request) {
       `,
       )
       .order("created_at", { ascending: false });
-    console.log(
-      error?.code,
-      error?.message,
-      "error from supabase query in route.ts",
-    );
+
     if (error) throw error;
 
     return NextResponse.json(contractors);

@@ -70,7 +70,6 @@ export async function POST(request: Request) {
   try {
     const supabase = await createClient();
     const settings = await request.json();
-    console.log(settings, "from settings route");
 
     // Check if user is admin
     const {
