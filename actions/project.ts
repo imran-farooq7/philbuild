@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { createNotification } from "./notifications";
 
 export type CreateProjectData = {
   title: string;
@@ -40,6 +41,7 @@ async function getReadClient() {
 }
 
 // Create new project
+// app/actions/project.ts - Updated createProject
 export async function createProject(formData: FormData) {
   const supabase = await createClient();
 
@@ -57,16 +59,22 @@ export async function createProject(formData: FormData) {
 
   if (!buyer) throw new Error("Buyer profile not found");
 
-  const projectData: CreateProjectData = {
+  const projectData = {
     title: formData.get("title") as string,
     description: formData.get("description") as string,
     budget: parseFloat(formData.get("budget") as string),
     startDate: formData.get("startDate") as string,
     endDate: formData.get("endDate") as string,
     address: formData.get("address") as string,
+    category: formData.get("category") as string,
     scope: JSON.parse((formData.get("scope") as string) || "[]"),
     requirements: JSON.parse((formData.get("requirements") as string) || "[]"),
   };
+
+  // Validate dates
+  if (new Date(projectData.endDate) <= new Date(projectData.startDate)) {
+    throw new Error("End date must be after start date");
+  }
 
   // Create project
   const { data: project, error } = await supabase
@@ -82,11 +90,18 @@ export async function createProject(formData: FormData) {
       address: projectData.address,
       status: "draft",
       completion_percentage: 0,
+      metadata: {
+        category: projectData.category,
+        created_from: "web",
+      },
     })
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error("Project creation error:", error);
+    throw new Error(error.message);
+  }
 
   // Add project scope items
   for (const item of projectData.scope) {
@@ -104,8 +119,38 @@ export async function createProject(formData: FormData) {
     });
   }
 
-  revalidatePath("/dashboard/projects");
-  redirect(`/dashboard/projects/${project.id}`);
+  // Handle document uploads
+  const documents = Array.from(formData.entries())
+    .filter(([key]) => key.startsWith("document_"))
+    .map(([_, file]) => file as File);
+
+  for (const doc of documents) {
+    if (doc.size > 0) {
+      const fileName = `${Date.now()}_${doc.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from("project-documents")
+        .upload(`${project.id}/${fileName}`, doc);
+
+      if (!uploadError) {
+        await supabase.from("documents").insert({
+          project_id: project.id,
+          title: doc.name,
+          file_url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/project-documents/${project.id}/${fileName}`,
+          file_type: doc.type,
+          uploaded_by: user.id,
+        });
+      }
+    }
+  }
+
+  // Track analytics
+  await supabase.from("analytics_events").insert({
+    event_type: "project_created",
+    user_id: user.id,
+    project_id: project.id,
+    metadata: { budget: projectData.budget },
+  });
+  redirect("/buyer");
 }
 
 // Publish project for contractor bidding
