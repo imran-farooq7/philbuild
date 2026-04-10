@@ -55,7 +55,7 @@ async function AdminDashboardContent() {
     .eq("id", user.id)
     .single();
   if (profile?.user_type !== "admin") {
-    redirect("/dashboard");
+    redirect("/");
   }
 
   const analytics = await getPlatformAnalytics(30);
