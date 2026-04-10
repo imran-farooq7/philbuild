@@ -119,7 +119,7 @@ export async function ActiveContracts() {
                       src={contract.contractor_avatar || undefined}
                     />
                     <AvatarFallback>
-                      {contract.contractor_name.charAt(0)}
+                      {contract.contractor_name.charAt(0) ?? "U"}
                     </AvatarFallback>
                   </Avatar>
                   <div>
